@@ -12,6 +12,7 @@ extern "C"
 }
 #endif
 #include "render.cpp"
+#include "const.h"
 using namespace std;
 
 static char *src_filename;
@@ -89,48 +90,50 @@ int open_codec_context(int *stream_idx,
 
 static int output_video_frame(AVFrame *frame)
 {
-
-    //TODO 出发处理帧细节
-    static int framecount = 0;
-    framecount++;
-    bool iskey = frame->key_frame == 1;
-    AVPictureType type = frame->pict_type;
-
-    cout << framecount << " ";
-    if (AV_PICTURE_TYPE_I == type)
+    if (DAFU_DEBUG)
     {
-        cout << "I";
+        //TODO 出发处理帧细节
+        static int framecount = 0;
+        framecount++;
+        bool iskey = frame->key_frame == 1;
+        AVPictureType type = frame->pict_type;
+
+        cout << framecount << " ";
+        if (AV_PICTURE_TYPE_I == type)
+        {
+            cout << "I";
+        }
+        else if (AV_PICTURE_TYPE_P == type)
+        {
+            cout << "P";
+        }
+        else
+        {
+            cout << "B";
+        }
+
+        // cout << "   " << frame->quality;
+
+        cout << "   dts:    " << frame->pkt_dts;
+
+        cout << "   pts " << frame->pts;
+
+        cout << "   pkt_size    " << frame->pkt_size;
+
+        cout << "   size    " << frame->width << ":" << frame->height;
+
+        cout << "   framenum:   " << frame->coded_picture_number;
+
+        int size = 0;
+        for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+        {
+            size += frame->linesize[i];
+        }
+
+        cout << "   size:   " << size;
+
+        cout << endl;
     }
-    else if (AV_PICTURE_TYPE_P == type)
-    {
-        cout << "P";
-    }
-    else
-    {
-        cout << "B";
-    }
-
-    // cout << "   " << frame->quality;
-
-    cout << "   dts:    " << frame->pkt_dts;
-
-    cout << "   pts " << frame->pts;
-
-    cout << "   pkt_size    " << frame->pkt_size;
-
-    cout << "   size    " << frame->width << ":" << frame->height;
-
-    cout << "   framenum:   " << frame->coded_picture_number;
-
-    int size = 0;
-    for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
-    {
-        size += frame->linesize[i];
-    }
-
-    cout << "   size:   " << size;
-
-    cout << endl;
 
     RenderFrame(frame);
 }
