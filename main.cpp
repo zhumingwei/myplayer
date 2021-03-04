@@ -82,6 +82,7 @@ int open_codec_context(int *stream_idx,
                     av_get_media_type_string(type));
             return ret;
         }
+
         *stream_idx = stream_index;
     }
 

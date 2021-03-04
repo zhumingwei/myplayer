@@ -17,7 +17,7 @@
             "environment": [],
             "console": "externalTerminal",
             "MIMode": "lldb",
-            // "preLaunchTask": "make"
+            "preLaunchTask": "make"
         },
     ]
 }

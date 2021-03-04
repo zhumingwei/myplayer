@@ -1,8 +1,12 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+#include <string.h>
 #include <libavutil/avassert.h>
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -13,35 +17,25 @@ extern "C"
 #endif
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-
+#include "render.h"
 using namespace std;
 // settings
 const unsigned int SCR_WIDTH = 1000;
 const unsigned int SCR_HEIGHT = 800;
-const char *vertexShaderSource = "#version 330 core\n"
-                                 "layout (location = 0) in vec3 aPos;\n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                 "}\0";
 
-const char *fragmentShaderSource = "varying lowp vec2 v_texCoord;\
-uniform sampler2D tex_y;\
-uniform sampler2D tex_u;\
-uniform sampler2D tex_v;\
-void main(void)\
-{\
-float r, g, b, y, u, v;\
-y = texture2D(tex_y, v_texCoord).r;\
-u = texture2D(tex_u, v_texCoord).r - 0.5;\
-v = texture2D(tex_v, v_texCoord).r - 0.5;\
-r = y + 1.13983*v;\
-g = y - 0.39465*u - 0.58060*v;\
-b = y + 2.03211*u;\
-gl_FragColor = vec4(r, g, b, 1.0);\
-}";
+// const char *vertexShaderSource = "#version 330 core\n"
+//                                  "layout (location = 0) in vec3 aPos;\n"
+//                                  "void main()\n"
+//                                  "{\n"
+//                                  "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+//                                  "}\0";
+
+// const char *fragmentShaderSource = "#version 330 core\n"
+//                                    "out vec4 FragColor;\n"
+//                                    "void main()\n"
+//                                    "{\n"
+//                                    "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+//                                    "}\0";
 
 bool init = false;
 static GLFWwindow *window;
@@ -79,8 +73,16 @@ int Init()
         return -1;
     }
 
+    GLint nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
+
     //vertex shader
     int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+    char *vertexShaderSource = (char *)malloc(sizeof(char) * 10240);
+    GetStringFromPath(vertexShaderSource, "/Users/zhumingwei/project/c++/flvparser/shader.vs");
+    // strcpy(sp, a);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
     int success;
@@ -92,11 +94,15 @@ int Init()
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
     }
+    free(vertexShaderSource);
     //fragment shader
+    char *fragmentShaderSource = (char *)malloc(sizeof(char) * 10240);
+    GetStringFromPath(fragmentShaderSource, "/Users/zhumingwei/project/c++/flvparser/shader.fs");
     int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    free(fragmentShaderSource);
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
@@ -119,10 +125,10 @@ int Init()
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,   // 右上角
-        0.5f, -0.5f, 0.0f,  // 右下角
-        -0.5f, -0.5f, 0.0f, // 左下角
-        -0.5f, 0.5f, 0.0f   // 左上角
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f,   // 右上角
+        0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  // 右下角
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 左下角
+        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f   // 左上角
     };
 
     unsigned int indices[] = {
@@ -137,13 +143,14 @@ int Init()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-
-    glEnableVertexAttribArray(0);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -153,6 +160,35 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+int GetStringFromPath(char *strings, const char *path)
+{
+
+    std::ifstream vShaderFile(path);
+    try
+    {
+        // 打开文件
+        vShaderFile.open(path);
+
+        std::stringstream vShaderStream;
+        // 读取文件的缓冲内容到数据流中
+        vShaderStream << vShaderFile.rdbuf();
+        // 关闭文件处理器
+        vShaderFile.close();
+
+        const char *vertexCode;
+        // 转换数据流到string
+        string s = vShaderStream.str();
+        vertexCode = s.c_str();
+        std::strcpy(strings, vertexCode);
+        return 0;
+    }
+    catch (std::ifstream::failure e)
+    {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+    }
+    return NULL;
 }
 
 void RenderFrame(AVFrame *frame)
@@ -169,28 +205,77 @@ void RenderFrame(AVFrame *frame)
         }
     }
 
+    //绑定纹理
+    GLuint _planarTextureHandles[3]; //y u v
+    glGenTextures(3, _planarTextureHandles);
+
+    feedTextureWithImageData(_planarTextureHandles, frame);
+
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window))
-    {
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+    // while (!glfwWindowShouldClose(window))
+    // {
+    processInput(window);
+    // render
+    // ------
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-        //draw triangle
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        // glDrawArrays(GL_TRIANGLES,0,3);
-        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,EBO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    //draw triangle
+    glUseProgram(shaderProgram);
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-        break;
-    }
+    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+    // -------------------------------------------------------------------------------
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    // break;
+    // }
+}
+
+void feedTextureWithImageData(GLuint handlers[3], AVFrame *avframe)
+{
+    dfBindTexture(avframe->data[0], avframe->linesize[0], avframe->height, handlers[0]);
+    dfBindTexture(avframe->data[1], avframe->linesize[1], avframe->height / 2, handlers[1]);
+    dfBindTexture(avframe->data[2], avframe->linesize[2], avframe->height / 2, handlers[2]);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "samplerY"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "samplerU"), 1);
+    glUniform1i(glGetUniformLocation(shaderProgram, "samplerV"), 2);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, handlers[0]);
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, handlers[1]);
+
+    glActiveTexture(GL_TEXTURE0 + 2);
+    glBindTexture(GL_TEXTURE_2D, handlers[2]);
+}
+
+void dfBindTexture(uint8_t *data, int width, int height, GLuint handler)
+{
+    glBindTexture(GL_TEXTURE_2D, handler);
+    //设置放大和缩小时，纹理的过滤选项为：线性过滤
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //设置纹理X,Y轴的纹理环绕选项为：边缘像素延伸AVPixelFormat
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //加载图像数据到纹理，GL_LUMINANCE指明了图像数据的像素格式为只有亮度，虽然第三个和第七个参数都使用了GL_LUMINANCE，
+    //但意义是不一样的，前者指明了纹理对象的颜色分量成分，后者指明了图像数据的像素格式
+    //获得纹理对象后，其每个像素的r,g,b,a值都为相同，为加载图像的像素亮度，在这里就是YUV某一平面的分量值
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+
+    //解绑
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }
 
 void dispose_render()
