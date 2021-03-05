@@ -1,23 +1,8 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include <string.h>
-#include <libavutil/avassert.h>
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libavutil/avutil.h>
-#include <libavutil/imgutils.h>
-#ifdef __cplusplus
-}
-#endif
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include "render.h"
+#include <fstream>
+
+#include <iostream>
+#include <sstream>
 using namespace std;
 // settings
 const unsigned int SCR_WIDTH = 1000;
@@ -151,6 +136,7 @@ int Init()
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    return 0;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -188,7 +174,7 @@ int GetStringFromPath(char *strings, const char *path)
     {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
     }
-    return NULL;
+    return 1;
 }
 
 void RenderFrame(AVFrame *frame)
@@ -266,7 +252,7 @@ void dfBindTexture(uint8_t *data, int width, int height, GLuint handler)
     //加载图像数据到纹理，GL_LUMINANCE指明了图像数据的像素格式为只有亮度，虽然第三个和第七个参数都使用了GL_LUMINANCE，
     //但意义是不一样的，前者指明了纹理对象的颜色分量成分，后者指明了图像数据的像素格式
     //获得纹理对象后，其每个像素的r,g,b,a值都为相同，为加载图像的像素亮度，在这里就是YUV某一平面的分量值
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
 
     //解绑
     glBindTexture(GL_TEXTURE_2D, 0);

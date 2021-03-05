@@ -11,7 +11,7 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-#include "render.cpp"
+#include "render.h"
 #include "const.h"
 using namespace std;
 

@@ -4,13 +4,14 @@ project(flv_parser VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-include_directories(/usr/local/include)
 include_directories(${CMAKE_SOURCE_DIR}/glad/include)
-link_directories(/usr/local/lib)
+include_directories(/usr/local/include)
 link_directories(${CMAKE_SOURCE_DIR}/glad/src)
+link_directories(/usr/local/lib)
 
 
-add_executable(flv_parser main.cpp ${CMAKE_SOURCE_DIR}/glad/src/glad.c const.h)
+
+add_executable(flv_parser main.cpp ${CMAKE_SOURCE_DIR}/glad/src/glad.c const.h render.cpp)
 
 target_link_libraries(flv_parser avformat avcodec avutil glfw)
 
