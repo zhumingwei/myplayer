@@ -1,1 +1,1 @@
-#define DAFU_DEBUG false
+#define DAFU_DEBUG true

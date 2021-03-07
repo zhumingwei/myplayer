@@ -226,18 +226,17 @@ void feedTextureWithImageData(GLuint handlers[3], AVFrame *avframe)
     dfBindTexture(avframe->data[1], avframe->linesize[1], avframe->height / 2, handlers[1]);
     dfBindTexture(avframe->data[2], avframe->linesize[2], avframe->height / 2, handlers[2]);
 
-    glUniform1i(glGetUniformLocation(shaderProgram, "samplerY"), 0);
-    glUniform1i(glGetUniformLocation(shaderProgram, "samplerU"), 1);
-    glUniform1i(glGetUniformLocation(shaderProgram, "samplerV"), 2);
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, handlers[0]);
+    glUniform1i(glGetUniformLocation(shaderProgram, "samplerY"), 0);
 
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, handlers[1]);
+    glUniform1i(glGetUniformLocation(shaderProgram, "samplerU"), 1);
 
     glActiveTexture(GL_TEXTURE0 + 2);
     glBindTexture(GL_TEXTURE_2D, handlers[2]);
+    glUniform1i(glGetUniformLocation(shaderProgram, "samplerV"), 2);
 }
 
 void dfBindTexture(uint8_t *data, int width, int height, GLuint handler)
@@ -266,10 +265,10 @@ void processInput(GLFWwindow *window)
 
 void dispose_render()
 {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
-    glfwTerminate();
+    // glDeleteVertexArrays(1, &VAO);
+    // glDeleteBuffers(1, &VBO);
+    // glDeleteBuffers(1, &EBO);
+    // // glfw: terminate, clearing all previously allocated GLFW resources.
+    // // ------------------------------------------------------------------
+    // glfwTerminate();
 }

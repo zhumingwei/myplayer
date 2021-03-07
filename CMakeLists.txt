@@ -11,7 +11,7 @@ link_directories(/usr/local/lib)
 
 
 
-add_executable(flv_parser main.cpp ${CMAKE_SOURCE_DIR}/glad/src/glad.c const.h render.cpp)
+add_executable(flv_parser main.cpp ${CMAKE_SOURCE_DIR}/glad/src/glad.c const.h render.cpp saveframe/saveframe.cpp)
 
 target_link_libraries(flv_parser avformat avcodec avutil glfw)
 

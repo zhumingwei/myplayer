@@ -34,11 +34,29 @@ void main()
 
 
 
-    highp float y = texture(SamplerY, coordinate).r;  
-    highp float u = texture(SamplerU, coordinate).r - 0.5;  
-    highp float v = texture(SamplerV, coordinate).r - 0.5;  
-    highp float r = y +             1.402 * v;  
-    highp float g = y - 0.344 * u - 0.714 * v;  
-    highp float b = y + 1.772 * u;  
-    FragColor = vec4(r, g, b, 1.0f);
+    // float y = texture(SamplerY, coordinate).r;  
+    // float u = texture(SamplerU, coordinate).r - 0.5f;  
+    // float v = texture(SamplerV, coordinate).r - 0.5f;  
+    // float r = y + 1.402f * v;  
+    // float g = y - 0.344f * u - 0.714f * v;  
+    // float b = y + 1.772f * u;  
+    // FragColor = vec4(r, g, b, 1.0f);
+    // FragColor = vec4(texture(SamplerV, coordinate).r, 1.0f, 1.0f, 1.0f);
+
+
+            vec3 yuv;
+            vec3 rgb;
+            yuv.r = texture(SamplerY, coordinate).r - (16.0 / 255.0);
+            yuv.g = texture(SamplerU, coordinate).r - 0.5;
+            yuv.b = texture(SamplerV, coordinate).r - 0.5;
+            rgb = mat3(1.164,  1.164,  1.164,
+                       0, -0.392, 2.017,
+                       1.596, -0.813,    0.0) * yuv;
+            // FragColor = vec4(0.0f,0.0f,rgb.b, 1.0f);
+            // FragColor = vec4(rgb.r, 0.0f,0.0f, 1.0f); // 红色
+            // FragColor = vec4(rgb.r, rgb.g,0.0f, 1.0f); // 绿色
+            // FragColor = vec4(0.0f, 0.0, rgb.b, 1.0f); // 绿色
+            // FragColor = vec4(rgb.bbb, 1.0f); 
+            FragColor = vec4(rgb.r, rgb.g,rgb.b , 0.0f); 
+    
 } 

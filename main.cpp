@@ -13,6 +13,7 @@ extern "C"
 #endif
 #include "render.h"
 #include "const.h"
+#include "saveframe/saveframe.h"
 using namespace std;
 
 static char *src_filename;
@@ -132,6 +133,8 @@ static int output_video_frame(AVFrame *frame)
         }
 
         cout << "   size:   " << size;
+
+        SaveFrame(framecount, frame);
 
         cout << endl;
     }
