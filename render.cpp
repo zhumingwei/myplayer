@@ -7,21 +7,8 @@ using namespace std;
 // settings
 const unsigned int SCR_WIDTH = 1000;
 const unsigned int SCR_HEIGHT = 800;
-
-// const char *vertexShaderSource = "#version 330 core\n"
-//                                  "layout (location = 0) in vec3 aPos;\n"
-//                                  "void main()\n"
-//                                  "{\n"
-//                                  "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-//                                  "}\0";
-
-// const char *fragmentShaderSource = "#version 330 core\n"
-//                                    "out vec4 FragColor;\n"
-//                                    "void main()\n"
-//                                    "{\n"
-//                                    "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-//                                    "}\0";
-
+//绑定纹理
+GLuint _planarTextureHandles[3]; //y u v
 bool init = false;
 static GLFWwindow *window;
 static int shaderProgram;
@@ -188,12 +175,9 @@ void RenderFrame(AVFrame *frame)
         else
         {
             init = true;
+            glGenTextures(3, _planarTextureHandles);
         }
     }
-
-    //绑定纹理
-    GLuint _planarTextureHandles[3]; //y u v
-    glGenTextures(3, _planarTextureHandles);
 
     feedTextureWithImageData(_planarTextureHandles, frame);
 
@@ -226,17 +210,18 @@ void feedTextureWithImageData(GLuint handlers[3], AVFrame *avframe)
     dfBindTexture(avframe->data[1], avframe->linesize[1], avframe->height / 2, handlers[1]);
     dfBindTexture(avframe->data[2], avframe->linesize[2], avframe->height / 2, handlers[2]);
 
+    glUseProgram(shaderProgram);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, handlers[0]);
-    glUniform1i(glGetUniformLocation(shaderProgram, "samplerY"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "SamplerY"), 0);
 
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, handlers[1]);
-    glUniform1i(glGetUniformLocation(shaderProgram, "samplerU"), 1);
+    glUniform1i(glGetUniformLocation(shaderProgram, "SamplerU"), 1);
 
     glActiveTexture(GL_TEXTURE0 + 2);
     glBindTexture(GL_TEXTURE_2D, handlers[2]);
-    glUniform1i(glGetUniformLocation(shaderProgram, "samplerV"), 2);
+    glUniform1i(glGetUniformLocation(shaderProgram, "SamplerV"), 2);
 }
 
 void dfBindTexture(uint8_t *data, int width, int height, GLuint handler)
