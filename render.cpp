@@ -1,8 +1,8 @@
 #include "render.h"
 #include <fstream>
-
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 using namespace std;
 // settings
 const unsigned int SCR_WIDTH = 1000;
@@ -27,7 +27,7 @@ int Init()
 
     // glfw window creation
     // --------------------
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "大福播放器", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -53,7 +53,7 @@ int Init()
     int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
     char *vertexShaderSource = (char *)malloc(sizeof(char) * 10240);
-    GetStringFromPath(vertexShaderSource, "/Users/zhumingwei/project/c++/flvparser/shader.vs");
+    GetStringFromPath(vertexShaderSource, "/Users/zhumingwei/project/c++/myplayer/shader.vs");
     // strcpy(sp, a);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
@@ -69,7 +69,7 @@ int Init()
     free(vertexShaderSource);
     //fragment shader
     char *fragmentShaderSource = (char *)malloc(sizeof(char) * 10240);
-    GetStringFromPath(fragmentShaderSource, "/Users/zhumingwei/project/c++/flvparser/shader.fs");
+    GetStringFromPath(fragmentShaderSource, "/Users/zhumingwei/project/c++/myplayer/shader.fs");
     int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
@@ -97,10 +97,10 @@ int Init()
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f,   // 右上角
-        0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  // 右下角
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 左下角
-        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f   // 左上角
+        1.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 右上角
+        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  // 右下角
+        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // 左下角
+        -1.0f, 1.0f, 0.0f, 0.0f, 0.0f   // 左上角
     };
 
     unsigned int indices[] = {
@@ -166,6 +166,7 @@ int GetStringFromPath(char *strings, const char *path)
 
 void RenderFrame(AVFrame *frame)
 {
+    usleep(40000);
     if (!init)
     {
         if (Init() < 0)
